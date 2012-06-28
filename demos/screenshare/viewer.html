@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<!--
+Copyright 2012 Google Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Author: Eric Bidelman (ericbidelman@chromium.org)
+-->
+<html>
+<head>
+  <title>Screen share</title>
+  <meta charset="utf-8">
+  <link href="http://fonts.googleapis.com/css?family=Open+Sans:300" rel="stylesheet" type="text/css">
+</head>
+<style>
+html, body {
+  overflow: hidden;
+}
+body {
+  color: #222;
+  font-family: 'Open Sans', arial, sans-serif;
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+}
+body > section {
+  display: -webkit-flex;
+  -webkit-justify-content: center;
+  -webkit-align-items: center;
+  -webkit-box-sizing: border-box;
+  min-height: 600px;
+  min-width: 800px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.4) inset;
+  background: rgba(0,0,0,0.1);
+}
+section:after {
+  content: 'No one is sharing a screen with you :(';
+  font-size: 30px;
+  color: rgba(0,0,0,0.4);
+  display: block;
+  position: relative;
+  z-index: -1;
+}
+h1 {
+  text-align: center;
+  margin: 0;
+  color: rgba(0,0,0,0);
+  -webkit-text-stroke: 1px black;
+  letter-spacing: 10px;
+}
+</style>
+</head>
+<body>
+
+<h1>VIEWING</h1>
+<section>
+  <img id="screenshot">
+</section>
+
+<script src="app.js"></script>
+<script src="viewer.js"></script>
+</body>
+</html>

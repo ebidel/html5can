@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<!--
+Copyright 2011 Google Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Author: Eric Bidelman (ericbidelman@chromium.org)
+-->
+<html>
+<head>
+  <meta charset="utf-8">
+</head>
+<style>
+body {
+	font-size: 14px;
+}
+input {
+  vertical-align: middle;
+  height: 20px;
+}
+input[type="range"]:after {
+  position: relative;
+  left: 135px;
+  top: -17px;
+}
+#refresh-rate:after {
+  content: attr(data-value) 'ms';
+}
+#quality:after {
+  content: attr(data-value) '%';
+}
+</style>
+</head>
+<body>
+
+<p>Refresh rate: <input type="range" data-value="250" id="refresh-rate" min="50" max="1000" value="250"></p>
+<p>Image quality: <input type="range" data-value="100" id="quality" min="0" max="100" value="100"></p>
+
+<script>
+var bgPage = chrome.extension.getBackgroundPage();
+
+document.querySelector('#refresh-rate').onchange = function(e) {
+  bgPage.SEND_INTERVAL_MS = this.valueAsNumber;
+  this.dataset.value = this.valueAsNumber;
+};
+
+document.querySelector('#quality').onchange = function(e) {
+  bgPage.IMG_QUALITY = this.valueAsNumber;
+  this.dataset.value = this.valueAsNumber;
+}
+</script>
+</body>
+</html>

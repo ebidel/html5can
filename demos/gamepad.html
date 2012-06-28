@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html> 
+<head>
+<title>GamePad Window</title>
+<style>
+body {
+  background-color: black;
+  color: white;
+}
+#pad {
+  background: #fff;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  z-index: 1000;
+  position: absolute;
+  bottom: 25px;
+  right: 25px;
+}
+#pad td {
+  height: 25px;
+  width: 25px;
+  border-radius: 5px;
+}
+#pad td[data-pos] {
+  border: 1px solid rgba(255,0,0,0.5);
+  background: rgba(255,0,0,0.1);
+}
+#pad td.on {
+  background: red;
+  /*box-shadow: 1px 1px 3px black;*/
+  /*border: 1px solid darkred;*/
+}
+#pad tr:first-of-type :nth-child(2) {
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+}
+#pad tr:nth-child(2) :nth-child(1) {
+
+  border-top-left-radius: 15px;
+  border-bottom-left-radius: 15px;
+}
+#pad tr:nth-child(2) :nth-child(2) {
+
+}
+#pad tr:nth-child(2) :nth-child(3) {
+  border-top-right-radius: 15px;
+  border-bottom-right-radius: 15px;
+}
+#pad tr:nth-child(3) :nth-child(2) {
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+}
+</style>
+</head>
+<body> 
+
+<table id="pad">
+  <tr><td></td><td data-pos="UP"></td><td></td></tr>
+  <tr><td data-pos="LEFT"></td><td></td><td data-pos="RIGHT"></td></tr>
+  <tr><td></td><td data-pos="DOWN"></td><td></td></tr>
+</table>
+
+<p><button onclick="openWin();">Open Window</button></p>
+
+<pre></pre>
+
+<script>
+var output = document.querySelector('pre');
+var leftButton = document.querySelector('[data-pos="LEFT"]');
+var rightButton = document.querySelector('[data-pos="RIGHT"]');
+var upButton = document.querySelector('[data-pos="UP"]');
+var downButton = document.querySelector('[data-pos="DOWN"]');
+var popup = null;
+
+var pos = {
+  UP: -1,
+  DOWN: 1,
+  LEFT: -1,
+  RIGHT: 1
+};
+
+function openWin() {
+  var width = 300;
+  var height = 300;
+  popup = window.open('popup.html', '', 'width=' + width + ',height=' + height);
+  popup.moveTo((screen.width / 2) - width / 2, (screen.height / 2) - height / 2);
+  window.webkitRequestAnimationFrame(updateStatus);
+}
+
+function movePopupBy(xSign, ySign) {
+  if (!popup) {
+    return;
+  }
+
+  var DELTA = 10;
+  popup.moveBy(xSign * DELTA, ySign * DELTA);
+}
+
+function updateStatus() {
+  window.webkitRequestAnimationFrame(updateStatus);
+
+  var gamepads = navigator.webkitGamepads;
+
+  var data = ''; 
+  leftButton.classList.remove('on');
+  rightButton.classList.remove('on');
+  upButton.classList.remove('on');
+  downButton.classList.remove('on');
+
+    var pad = gamepads[0]; // ASSUME 1 GAMEPAD IS CONNECTED.
+    if (!pad) {
+      return;
+    }
+
+    var leftRightButtonPos = Math.round(pad.axes[0]);
+    var upDownButtonPos = Math.round(pad.axes[1]);
+
+    var pressedCoords = [0, 0, 0, 0];
+
+    if (leftRightButtonPos == pos.LEFT) {
+      pressedCoords[3] = 1;
+      leftButton.classList.add('on');
+    } else if (leftRightButtonPos == pos.RIGHT) {
+      pressedCoords[1] = 1;
+      rightButton.classList.add('on');
+    }
+
+    if (upDownButtonPos == pos.UP) {
+      pressedCoords[0] = 1;
+      upButton.classList.add('on');
+    } else if (upDownButtonPos == pos.DOWN) {
+      pressedCoords[2] = 1;
+      downButton.classList.add('on');
+    }
+
+    movePopupBy(leftRightButtonPos, upDownButtonPos);
+
+    data += pad.index + ": " + pad.id + "<br/>";
+    for (var i = 0; i < pad.buttons.length; ++i) {
+      data += "button" + i + ": " + pad.buttons[i] + "<br/>";
+    }
+
+  output.innerHTML = data;
+}
+</script> 
+</body> 
+</html> 

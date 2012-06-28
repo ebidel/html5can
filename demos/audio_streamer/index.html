@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<!--
+Copyright 2012 Google Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Author: Eric Bidelman (ebidel@gmail.com)
+-->
+<html>
+<head>
+  <title>Binary WebSocket Audio Streamer</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Orbitron|Kameron|Muli|Open+Sans:regular,semibold,italic,italicsemibold|Droid+Sans+Mono&v2">
+<style>
+::-webkit-scrollbar {
+  width: 15px;
+  background: white;
+}
+::-webkit-scrollbar-thumb {
+  -webkit-box-shadow: inset 0 0 99px rgba(0,0,0,.2);
+  border: solid transparent;
+  border-width: 6px 4px;
+}
+html, body {
+  margin: 0;
+}
+body {
+  font-family: 'Open Sans';
+  -webkit-font-smoothing: antialiased;
+}
+h2 {
+  border: 1px solid #BABCC0;
+  border-width: 0 0 0 1px;
+  padding: 0 12px;
+  font-weight: 300;
+  margin: 0;
+  text-shadow: 0 1px 1px white;
+  white-space: nowrap;
+  display: inline-block;
+}
+header {
+  background: whiteSmoke;
+  background-image: -moz-linear-gradient(top,#FAFAFA,whiteSmoke);
+  background-image: -ms-linear-gradient(top,#FAFAFA,whiteSmoke);
+  background-image: -o-linear-gradient(top,#FAFAFA,whiteSmoke);
+  background-image: -webkit-linear-gradient(top,#FAFAFA,whiteSmoke);
+  background-image: linear-gradient(top,#FAFAFA,whiteSmoke);
+  border-bottom: 1px solid #EBEBEB;
+  color: #91959C;
+  height: 45px;
+  padding: 17px 15px 5px;
+}
+header img {
+  height: 25px;
+  width: 25px;
+  opacity: 0.1;
+  margin-left: 5px;
+  vertical-align: sub;
+}
+.panel {
+  margin: 1em;
+}
+#chat {
+  position: absolute;
+  background: -webkit-linear-gradient(#fff 40%, #eee);
+  width: 100%;
+  height: 200px;
+  bottom: 0;
+  overflow: auto;
+  overflow-x: hidden;
+  padding: 10px;
+  box-sizing: border-box;
+  box-shadow: -3px 0 10px #ddd;
+  font-size: 10pt;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+#chat input[type="text"] {
+  border: 1px solid #ccc;
+  padding: 5px;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -o-box;
+  display: box;
+}
+#chat input[type="text"]:not(:disabled):hover {
+  border-color: #777;
+}
+#chat .log {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+  -o-box-flex: 1;
+  box-flex: 1;
+}
+#chat .log div {
+  padding: 3px;
+}
+#chat .log > div:nth-child(odd) {
+  background-color: #eee;
+}
+#chat .log .username {
+  font-weight: bold;
+}
+#connect-button {
+  color: darkgreen;
+}
+#disconnect-button {
+  color: darkred;
+}
+#connect-button:not(:disabled):hover {
+  border-color: darkgreen;
+}
+#disconnect-button:not(:disabled):hover {
+  border-color: darkred;
+}
+input {
+  vertical-align: middle;
+}
+input[type="number"] {
+  border: none;
+  padding: 5px;
+  font-size: 13pt;
+  box-shadow: 0 1px 4px #999 inset;
+  border-radius: 3px;
+  vertical-align: middle;
+  font-size: inherit;
+}
+::-webkit-outer-spin-button,
+::-webkit-inner-spin-button {
+  display: none;
+  -webkit-appearance: none;
+  margin: 0;
+}
+:-webkit-any(button, .fakebutton),
+input[type="file"].button:before {
+  background: -webkit-linear-gradient(#F9F9F9 40%, #E3E3E3 70%);
+  border: 1px solid #888;
+  border-radius: 3px;
+  margin: 0 8px 0 0;
+  color: black;
+  padding: 5px 8px;
+  outline: none;
+  white-space: nowrap;
+  vertical-align: middle;
+  -webkit-user-select:none;
+  user-select: none;
+  cursor: pointer;
+  text-shadow: 1px 1px #fff;
+  font-weight: 700;
+}
+:-webkit-any(button, .fakebutton):not(:disabled):hover,
+input[type="file"].button:not(:disabled):hover:before {
+  border: 1px solid #000;
+}
+:-webkit-any(button, .fakebutton):not(:disabled):active,
+input[type="file"].button:not(:disabled):active:before {
+  background: -webkit-linear-gradient(#E3E3E3 40%, #F9F9F9 70%);
+}
+input[type="file"].button {
+  width: 112px;
+  height: 25px;
+}
+input[type="file"].button::-webkit-file-upload-button {
+  visibility: hidden;
+}
+input[type="file"].button:before {
+  content: 'Load audio file';
+  display: inline-block;
+  outline: none;
+  white-space: nowrap;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: pointer;
+}
+:disabled,
+input[type="file"].button:disabled:before {
+  color: #ccc !important;
+  background-color: #eee;
+}
+progress {
+  width: 400px;
+}
+.title {
+  font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h2>WebSocket Audio Streamer</h3><img src="speaker.svg">
+</header>
+
+<section class="panel">
+  <p>
+    <button onclick="connect()" id="connect-button">Connect</button>
+    <button onclick="disconnect()" id="disconnect-button">Disconnect</button>
+    <input type="file" id="audio-file" class="button" accept="audio/*">
+    <span id="song-title"></span>
+  </p>
+  <div id="container"></div>
+  <canvas id="fft" width="512" height="250"></canvas>
+</section>
+<div id="chat">
+  <div class="log"></div>
+  <input type="text" id="msg" disabled placeholder="Send a chat message....">
+</div>
+
+<script src="jdataview.js"></script>
+<script src="audio_streamer.js"></script>
+<script>
+// Take care of vendor prefixes.
+window.WebSocket = window.WebSocket || window.MozWebSocket;
+window.URL = window.URL || window.webkitURL;
+window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder ||
+                     window.MozBlobBuilder;
+
+const WS_HOST = 'localhost:8080';
+
+var ws = null;
+var songProps = {};
+var songStarted = false;
+var startTimeAdjusted = null;
+var sm = new SoundManager();
+
+//var queue = [];
+
+function connect() {
+  ws = new WebSocket('ws://' + WS_HOST, ['dumby-protocol']);
+  ws.binaryType = 'arraybuffer';
+
+  ws.onopen = function(e) {
+    console.log('Connection OPEN');
+    document.querySelector('#connect-button').disabled = true;
+    document.querySelector('#disconnect-button').disabled = false;
+    document.querySelector('#msg').disabled = false;
+  };
+
+  ws.onmessage = function(e) {
+    var data = e.data;
+
+    if (typeof data == 'string') {
+      try {
+        data = JSON.parse(data);
+        if ('startTime' in data) {
+          songProps = data;
+
+          // First startTime? Set adjusted time and indicate a song started.
+          // Only want to set this once (after the first chunk is streamed).
+          if (!songStarted) {
+            startTimeAdjusted = songProps.startTime;
+            songStarted = true;
+          }
+
+        } else if ('username' in data) {
+          logChat(data.username, data.msg);
+        }
+      } catch(e) {
+        console.log(e);
+      }
+    } else {
+      if (data.__proto__ !== ArrayBuffer.prototype) { // Assert for the heck of it.
+        console.log(e);
+        alert('Expected ArrayBuffer from WebSocket.');
+      }
+
+      // On page refresh, pick up streaming audio. The start time needs to be
+      // adjusted so subsequent chunks are scheduled at the correct time.
+      if (startTimeAdjusted) {
+        songProps.startTime = songProps.startTime - startTimeAdjusted;
+      }
+
+      // Queue a few chunks
+      // queue.push([data, songProps]);
+      // console.log(queue.length)
+      // if (queue.length > 3) {
+      //   var d = queue.shift();
+      //   sm.playFromArrayBuffer(d[0], d[1]);
+      // }
+
+      sm.playFromArrayBuffer(data, songProps);
+    }
+  };
+
+  ws.onclose = function(e) {
+    console.log('Connection CLOSED');
+  };
+
+  ws.onerror = function(e) {
+    console.log('Connection ERROR');
+    console.log(e);
+  };
+}
+
+function disconnect() {
+  ws.close();
+  document.querySelector('#connect-button').disabled = false;
+  document.querySelector('#disconnect-button').disabled = true;
+  document.querySelector('#msg').disabled = true;
+}
+
+function logChat(user, msg) {
+  var div = document.createElement('div');
+
+  var span = document.createElement('span');
+  span.classList.add('username');
+  span.textContent = user + '> ';
+
+  div.appendChild(span);
+
+  span = document.createElement('span');
+  span.textContent = msg;
+
+  div.appendChild(span);
+
+  var log = document.querySelector('#chat .log');
+  log.insertBefore(div, log.children[0]);
+}
+
+connect();
+var loader = new AudioLoader('#audio-file');
+
+var username = null;
+document.querySelector('#msg').addEventListener('keypress', function(e) {
+  if (e.keyCode == 13 && this.value.length) { // Enter
+    e.preventDefault();
+
+    // On first chat, have user enter a name.
+    if (!username) {
+      username = prompt('Enter a username') || Date.now();
+    }
+
+    // Log chat message locally and send across websocket.
+    logChat(username, this.value);
+    send({username: username, msg: this.value});
+
+    this.value = '';
+  }
+}, false);
+</script>
+<!--[if IE]>
+<script src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
+<script>CFInstall.check({mode: 'overlay'});</script>
+<![endif]-->
+</body>
+</html>
